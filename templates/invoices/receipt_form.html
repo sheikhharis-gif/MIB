@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Record Cheque Receipt{% endblock %}
+{% block page_title %}Record Cheque Receipt{% endblock %}
+{% block page_crumb %}Sales Tax Invoices &rsaquo; {{ invoice.invoice_no }} &rsaquo; Cheque Receipt{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:820px;">
+  <div class="panel-header">
+    <h2>{{ invoice.invoice_no }} &mdash; {{ invoice.vendor.name }}</h2>
+  </div>
+
+  <div class="panel" style="background:var(--blue-50); box-shadow:none; border:1px solid var(--border);">
+    <div class="form-grid">
+      <div><span class="hint">Total Invoice Amount</span><br><strong>Rs {{ invoice.total_invoice_amount|money }}</strong></div>
+      <div><span class="hint">Income Tax (7% of Total Invoice Amount)</span><br><strong>&minus; Rs {{ income_tax_7pct|money }}</strong></div>
+      <div><span class="hint">SRB Withholding (20% of SRB 15%)</span><br><strong>&minus; Rs {{ srb_withholding_20pct|money }}</strong></div>
+      <div><span class="hint">Net Receivable (2 cheques)</span><br><strong style="color:var(--blue-800); font-size:17px;">Rs {{ net_receivable|money }}</strong></div>
+    </div>
+  </div>
+
+  <form method="post" style="margin-top:20px;">
+    <input type="hidden" id="net_receivable_data" value="{{ net_receivable }}">
+    <div class="form-group">
+      <label>Received Date</label>
+      <input type="date" name="received_date">
+    </div>
+
+    <h3>Cheque 1</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" step="0.01" id="cheque1_amount" name="cheque1_amount" value="0">
+      </div>
+      <div class="form-group">
+        <label>Bank Name</label>
+        <input type="text" name="cheque1_bank" placeholder="e.g. HBL, MCB, UBL">
+      </div>
+      <div class="form-group">
+        <label>Cheque No</label>
+        <input type="text" name="cheque1_no">
+      </div>
+      <div class="form-group">
+        <label>Cheque Date</label>
+        <input type="date" name="cheque1_date">
+      </div>
+    </div>
+
+    <h3>Cheque 2</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" step="0.01" id="cheque2_amount" name="cheque2_amount" value="{{ net_receivable }}">
+      </div>
+      <div class="form-group">
+        <label>Bank Name</label>
+        <input type="text" name="cheque2_bank" placeholder="e.g. HBL, MCB, UBL">
+      </div>
+      <div class="form-group">
+        <label>Cheque No</label>
+        <input type="text" name="cheque2_no">
+      </div>
+      <div class="form-group">
+        <label>Cheque Date</label>
+        <input type="date" name="cheque2_date">
+      </div>
+    </div>
+
+    <div class="form-group span-2" style="margin-top:14px;">
+      <label>Notes</label>
+      <input type="text" name="notes">
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Save Cheque Receipt</button>
+      <a class="btn btn-outline" href="{{ url_for('invoices.view', invoice_id=invoice.id) }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var net = parseFloat(document.getElementById("net_receivable_data").value) || 0;
+  var c1 = document.getElementById("cheque1_amount");
+  var c2 = document.getElementById("cheque2_amount");
+  c1.addEventListener("input", function () {
+    var v1 = parseFloat(c1.value) || 0;
+    c2.value = (net - v1).toFixed(2);
+  });
+});
+</script>
+{% endblock %}

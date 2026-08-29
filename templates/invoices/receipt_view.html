@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Cheque Receipt{% endblock %}
+{% block page_title %}Cheque Receipt{% endblock %}
+{% block page_crumb %}Sales Tax Invoices &rsaquo; {{ invoice.invoice_no }} &rsaquo; Cheque Receipt{% endblock %}
+
+{% block content %}
+<div class="invoice-sheet" style="max-width:760px;">
+  <div class="invoice-head">
+    <div>
+      <h2>Cheque Receipt</h2>
+      <div class="muted">Invoice: {{ invoice.invoice_no }}</div>
+    </div>
+    <div style="text-align:right;">
+      <div><strong>Vendor:</strong> {{ invoice.vendor.name }}</div>
+      <div><strong>Received:</strong> {{ receipt.received_date }}</div>
+    </div>
+  </div>
+
+  <div class="invoice-totals" style="max-width:100%;">
+    <div class="row"><span>Total Invoice Amount</span><span>Rs {{ receipt.total_invoice_amount|money }}</span></div>
+    <div class="row"><span>&minus; Income Tax (7% of Total Invoice Amount)</span><span>Rs {{ receipt.income_tax_7pct|money }}</span></div>
+    <div class="row"><span>&minus; SRB Withholding (20% of SRB 15%)</span><span>Rs {{ receipt.srb_withholding_20pct|money }}</span></div>
+    <div class="row grand"><span>Net Amount Received</span><span>Rs {{ receipt.net_receivable|money }}</span></div>
+  </div>
+
+  <div class="form-grid" style="margin-top:24px;">
+    <div class="panel" style="box-shadow:none; border:1px solid var(--border);">
+      <h3 class="mt-0">Cheque 1</h3>
+      <p><strong>Amount:</strong> Rs {{ receipt.cheque1_amount|money }}</p>
+      <p><strong>Bank:</strong> {{ receipt.cheque1_bank or '—' }}</p>
+      <p><strong>Cheque No:</strong> {{ receipt.cheque1_no or '—' }}</p>
+      <p><strong>Date:</strong> {{ receipt.cheque1_date or '—' }}</p>
+    </div>
+    <div class="panel" style="box-shadow:none; border:1px solid var(--border);">
+      <h3 class="mt-0">Cheque 2</h3>
+      <p><strong>Amount:</strong> Rs {{ receipt.cheque2_amount|money }}</p>
+      <p><strong>Bank:</strong> {{ receipt.cheque2_bank or '—' }}</p>
+      <p><strong>Cheque No:</strong> {{ receipt.cheque2_no or '—' }}</p>
+      <p><strong>Date:</strong> {{ receipt.cheque2_date or '—' }}</p>
+    </div>
+  </div>
+
+  {% if receipt.notes %}<p class="hint" style="margin-top:14px;">Notes: {{ receipt.notes }}</p>{% endif %}
+
+  <div class="form-actions no-print">
+    <button class="btn" onclick="window.print()">Print</button>
+    <a class="btn btn-outline" href="{{ url_for('invoices.view', invoice_id=invoice.id) }}">Back to Invoice</a>
+  </div>
+</div>
+{% endblock %}

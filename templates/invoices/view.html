@@ -78,8 +78,19 @@
     <div class="row grand"><span>TOTAL INVOICE AMOUNT</span><span>Rs {{ invoice.total_invoice_amount|money }}</span></div>
   </div>
 
+  {% if invoice.receipt %}
+  <div class="panel no-print" style="margin-top:20px; background:var(--blue-50);">
+    <strong>Cheque receipt already recorded</strong> — Net received: Rs {{ invoice.receipt.net_receivable|money }}
+    <a href="{{ url_for('invoices.view_receipt', invoice_id=invoice.id) }}">View receipt &rarr;</a>
+  </div>
+  {% else %}
   <div class="form-actions no-print">
-    <button class="btn" onclick="window.print()">Print</button>
+    <a class="btn" href="{{ url_for('invoices.new_receipt', invoice_id=invoice.id) }}">Record Cheque Receipt</a>
+  </div>
+  {% endif %}
+
+  <div class="form-actions no-print">
+    <button class="btn btn-outline" onclick="window.print()">Print</button>
     <a class="btn btn-outline" href="{{ url_for('invoices.index') }}">Back to Invoices</a>
   </div>
 </div>

@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 
 from extensions import db
-from models import Invoice, InvoiceItem, Trip, Vendor
-from utils import next_invoice_no
+from models import Invoice, InvoiceItem, InvoiceReceipt, Trip, Vendor
+from utils import next_invoice_no, to_float
 from routes.company import get_profile
 
 invoices_bp = Blueprint("invoices", __name__, url_prefix="/invoices")
@@ -148,6 +148,59 @@ def view(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     company = get_profile()
     return render_template("invoices/view.html", invoice=invoice, company=company)
+
+
+@invoices_bp.route("/<int:invoice_id>/receipt/new", methods=["GET", "POST"])
+@login_required
+def new_receipt(invoice_id):
+    invoice = Invoice.query.get_or_404(invoice_id)
+    if invoice.receipt:
+        flash("A cheque receipt is already recorded for this invoice", "error")
+        return redirect(url_for("invoices.view_receipt", invoice_id=invoice.id))
+
+    income_tax_7pct = round(invoice.total_invoice_amount * 0.07, 2)
+    srb_withholding_20pct = round(invoice.srb_amount * 0.20, 2)
+    net_receivable = round(invoice.total_invoice_amount - income_tax_7pct - srb_withholding_20pct, 2)
+
+    if request.method == "POST":
+        receipt = InvoiceReceipt(
+            invoice_id=invoice.id,
+            total_invoice_amount=invoice.total_invoice_amount,
+            income_tax_7pct=income_tax_7pct,
+            srb_withholding_20pct=srb_withholding_20pct,
+            net_receivable=net_receivable,
+            cheque1_amount=to_float(request.form.get("cheque1_amount")),
+            cheque1_bank=request.form.get("cheque1_bank", "").strip(),
+            cheque1_no=request.form.get("cheque1_no", "").strip(),
+            cheque1_date=parse_date(request.form.get("cheque1_date")),
+            cheque2_amount=to_float(request.form.get("cheque2_amount")),
+            cheque2_bank=request.form.get("cheque2_bank", "").strip(),
+            cheque2_no=request.form.get("cheque2_no", "").strip(),
+            cheque2_date=parse_date(request.form.get("cheque2_date")),
+            received_date=parse_date(request.form.get("received_date")) or datetime.utcnow().date(),
+            notes=request.form.get("notes", "").strip(),
+        )
+        db.session.add(receipt)
+        invoice.status = "Paid"
+        db.session.commit()
+        flash("Cheque receipt recorded — payment marked as received", "success")
+        return redirect(url_for("invoices.view_receipt", invoice_id=invoice.id))
+
+    return render_template(
+        "invoices/receipt_form.html", invoice=invoice,
+        income_tax_7pct=income_tax_7pct, srb_withholding_20pct=srb_withholding_20pct,
+        net_receivable=net_receivable,
+    )
+
+
+@invoices_bp.route("/<int:invoice_id>/receipt")
+@login_required
+def view_receipt(invoice_id):
+    invoice = Invoice.query.get_or_404(invoice_id)
+    if not invoice.receipt:
+        flash("No cheque receipt recorded yet for this invoice", "error")
+        return redirect(url_for("invoices.view", invoice_id=invoice.id))
+    return render_template("invoices/receipt_view.html", invoice=invoice, receipt=invoice.receipt)
 
 
 @invoices_bp.route("/<int:invoice_id>/delete", methods=["POST"])

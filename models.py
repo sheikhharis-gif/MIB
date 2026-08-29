@@ -189,3 +189,31 @@ class InvoiceItem(db.Model):
     line_total = db.Column(db.Float, default=0)
 
 
+class InvoiceReceipt(db.Model):
+    """Records the 2-cheque payment received against a Sales Tax Invoice,
+    after Income Tax (7% of Total Invoice Amount) and SRB Withholding
+    (20% of the 15% SRB amount) are deducted."""
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey("invoice.id"), unique=True, nullable=False)
+
+    total_invoice_amount = db.Column(db.Float, default=0)
+    income_tax_7pct = db.Column(db.Float, default=0)        # 7% of total_invoice_amount
+    srb_withholding_20pct = db.Column(db.Float, default=0)  # 20% of the invoice's SRB (15%) amount
+    net_receivable = db.Column(db.Float, default=0)         # total_invoice_amount - both deductions
+
+    cheque1_amount = db.Column(db.Float, default=0)
+    cheque1_bank = db.Column(db.String(120))
+    cheque1_no = db.Column(db.String(60))
+    cheque1_date = db.Column(db.Date)
+
+    cheque2_amount = db.Column(db.Float, default=0)
+    cheque2_bank = db.Column(db.String(120))
+    cheque2_no = db.Column(db.String(60))
+    cheque2_date = db.Column(db.Date)
+
+    received_date = db.Column(db.Date, default=date.today)
+    notes = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    invoice = db.relationship("Invoice", backref=db.backref("receipt", uselist=False, cascade="all, delete-orphan"))
+
