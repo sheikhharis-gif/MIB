@@ -3,7 +3,7 @@ from flask_login import login_required
 from sqlalchemy import func
 
 from extensions import db
-from models import Vendor, Trip
+from models import Vendor, Trip, Payment
 
 vendors_bp = Blueprint("vendors", __name__, url_prefix="/vendors")
 
@@ -21,15 +21,28 @@ def index():
     for v in Vendor.query.all():
         totals[v.vendor_type] = totals.get(v.vendor_type, 0) + 1
 
-    # amount payable per vendor across all trips, for the "vendor detail" totals view
+    # amount payable per vendor across all trips, minus what's already been paid
     payable_by_vendor = dict(
         db.session.query(Trip.vendor_id, func.coalesce(func.sum(Trip.account_payable), 0.0))
         .group_by(Trip.vendor_id).all()
     )
+    paid_by_vendor = dict(
+        db.session.query(Payment.vendor_id, func.coalesce(func.sum(Payment.amount), 0.0))
+        .filter(Payment.category == "Payable").group_by(Payment.vendor_id).all()
+    )
+    received_by_vendor = dict(
+        db.session.query(Payment.vendor_id, func.coalesce(func.sum(Payment.amount), 0.0))
+        .filter(Payment.category == "Receivable").group_by(Payment.vendor_id).all()
+    )
+    payable_remaining_by_vendor = {
+        vid: (payable_by_vendor.get(vid, 0) - paid_by_vendor.get(vid, 0))
+        for vid in set(payable_by_vendor) | set(paid_by_vendor)
+    }
 
     return render_template(
         "vendors/list.html", vendors=vendors, vtype=vtype, totals=totals,
-        payable_by_vendor=payable_by_vendor,
+        payable_by_vendor=payable_by_vendor, paid_by_vendor=paid_by_vendor,
+        received_by_vendor=received_by_vendor, payable_remaining_by_vendor=payable_remaining_by_vendor,
     )
 
 
@@ -88,8 +101,8 @@ def edit(vendor_id):
 @login_required
 def delete(vendor_id):
     vendor = Vendor.query.get_or_404(vendor_id)
-    if vendor.trips or vendor.vehicles or vendor.invoices:
-        flash("Cannot delete a vendor that already has trips, vehicles or invoices", "error")
+    if vendor.trips or vendor.vehicles or vendor.invoices or vendor.payments:
+        flash("Cannot delete a vendor that already has trips, vehicles, invoices or payments", "error")
         return redirect(url_for("vendors.index"))
     db.session.delete(vendor)
     db.session.commit()

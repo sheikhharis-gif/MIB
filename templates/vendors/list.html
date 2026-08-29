@@ -34,7 +34,7 @@
   {% if vendors %}
   <div class="table-wrap">
     <table class="data-table">
-      <thead><tr><th>Name</th><th>Type</th><th>Phone</th><th>CNIC/NTN</th><th>Bank</th><th class="text-right">Total Payable (all trips)</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Type</th><th>Phone</th><th>CNIC/NTN</th><th>Bank</th><th class="text-right">Total Payable</th><th class="text-right">Paid</th><th class="text-right">Payable Remaining</th><th class="text-right">Received</th><th>Status</th><th></th></tr></thead>
       <tbody>
         {% for v in vendors %}
         <tr>
@@ -44,6 +44,9 @@
           <td>{{ v.cnic_ntn or '—' }}</td>
           <td>{{ v.bank_name or '—' }}</td>
           <td class="text-right">{{ payable_by_vendor.get(v.id, 0)|money }}</td>
+          <td class="text-right">{{ paid_by_vendor.get(v.id, 0)|money }}</td>
+          <td class="text-right"><strong>{{ payable_remaining_by_vendor.get(v.id, payable_by_vendor.get(v.id, 0))|money }}</strong></td>
+          <td class="text-right">{{ received_by_vendor.get(v.id, 0)|money }}</td>
           <td><span class="badge {{ 'green' if v.is_active else 'gray' }}">{{ 'Active' if v.is_active else 'Inactive' }}</span></td>
           <td>
             <a class="btn btn-outline btn-sm" href="{{ url_for('vendors.edit', vendor_id=v.id) }}">Edit</a>

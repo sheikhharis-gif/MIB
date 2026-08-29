@@ -32,6 +32,7 @@ def create_app():
     from routes.trips import trips_bp
     from routes.expenses import expenses_bp
     from routes.invoices import invoices_bp
+    from routes.payments import payments_bp
     from routes.company import company_bp
     from routes.reports import reports_bp
 
@@ -42,6 +43,7 @@ def create_app():
     app.register_blueprint(trips_bp)
     app.register_blueprint(expenses_bp)
     app.register_blueprint(invoices_bp)
+    app.register_blueprint(payments_bp)
     app.register_blueprint(company_bp)
     app.register_blueprint(reports_bp)
 
@@ -59,6 +61,7 @@ def create_app():
             return value
 
     with app.app_context():
+        migrate_legacy_payment_table()
         db.create_all()
         migrate_legacy_route_schema()
         migrate_trip_account_receivable()
@@ -70,6 +73,26 @@ def create_app():
         seed_company_profile()
 
     return app
+
+
+def migrate_legacy_payment_table():
+    """An older, incompatible 'payment' table (no vehicle_id column) may
+    exist from a previous design. It was never populated with real data, so
+    it's safe to drop and let create_all() rebuild it with the current schema."""
+    tables = [r[0] for r in db.session.execute(
+        text("SELECT name FROM sqlite_master WHERE type='table' AND name='payment'")
+    ).fetchall()]
+    if not tables:
+        return
+    columns = db.session.execute(text("PRAGMA table_info(payment)")).fetchall()
+    has_vehicle_id = any(col[1] == "vehicle_id" for col in columns)
+    if has_vehicle_id:
+        return
+    row_count = db.session.execute(text("SELECT COUNT(*) FROM payment")).scalar()
+    if row_count:
+        return
+    db.session.execute(text("DROP TABLE payment"))
+    db.session.commit()
 
 
 def add_column_if_missing(table, column, ddl_type):

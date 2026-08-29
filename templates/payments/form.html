@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Add Payment{% endblock %}
+{% block page_title %}Add Payment{% endblock %}
+{% block page_crumb %}Finance &rsaquo; Payments &rsaquo; New{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:760px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Payment Date</label>
+        <input type="date" name="payment_date" value="{{ (form.payment_date if form) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Type *</label>
+        {% set cat_val = (form.category if form else '') %}
+        <select name="category" required>
+          <option value="">— Select —</option>
+          <option value="Payable" {{ 'selected' if cat_val=='Payable' }}>Account Payable (paying a vendor)</option>
+          <option value="Receivable" {{ 'selected' if cat_val=='Receivable' }}>Account Receivable (received from customer)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Vendor</label>
+        <select name="vendor_id">
+          <option value="">— None —</option>
+          {% for v in vendors %}
+          <option value="{{ v.id }}" {{ 'selected' if form and form.vendor_id|string == v.id|string }}>{{ v.name }} ({{ v.vendor_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Vehicle</label>
+        <select name="vehicle_id">
+          <option value="">— None —</option>
+          {% for v in vehicles %}
+          <option value="{{ v.id }}" {{ 'selected' if form and form.vehicle_id|string == v.id|string }}>{{ v.reg_no }} ({{ v.vehicle_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Amount *</label>
+        <input type="number" step="0.01" name="amount" required value="{{ (form.amount if form) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Payment Method *</label>
+        {% set method_val = (form.method if form else 'Cash') %}
+        <select name="method" id="method" required>
+          <option value="Cash" {{ 'selected' if method_val=='Cash' }}>Cash</option>
+          <option value="Cheque" {{ 'selected' if method_val=='Cheque' }}>By Cheque</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="bank_name_group">
+        <label>Bank Name</label>
+        <input type="text" name="bank_name" value="{{ (form.bank_name if form) or '' }}">
+      </div>
+      <div class="form-group" id="cheque_no_group">
+        <label>Cheque No</label>
+        <input type="text" name="cheque_no" value="{{ (form.cheque_no if form) or '' }}">
+      </div>
+
+      <div class="form-group span-2">
+        <label>Notes</label>
+        <input type="text" name="notes" value="{{ (form.notes if form) or '' }}">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Save Payment</button>
+      <a class="btn btn-outline" href="{{ url_for('payments.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var methodSel = document.getElementById("method");
+  var bankGroup = document.getElementById("bank_name_group");
+  var chequeGroup = document.getElementById("cheque_no_group");
+  function toggleChequeFields() {
+    var show = methodSel.value === "Cheque";
+    bankGroup.style.display = show ? "" : "none";
+    chequeGroup.style.display = show ? "" : "none";
+  }
+  methodSel.addEventListener("change", toggleChequeFields);
+  toggleChequeFields();
+});
+</script>
+{% endblock %}

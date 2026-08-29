@@ -1,5 +1,5 @@
 from extensions import db
-from models import Trip, Invoice
+from models import Trip, Invoice, Payment
 
 
 def next_sequence(model, column_name, prefix, pad=4):
@@ -18,6 +18,10 @@ def next_hm_ref():
 
 def next_invoice_no():
     return next_sequence(Invoice, "invoice_no", "INV")
+
+
+def next_payment_no():
+    return next_sequence(Payment, "payment_no", "PMT")
 
 
 def to_float(value, default=0.0):

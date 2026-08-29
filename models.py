@@ -217,3 +217,23 @@ class InvoiceReceipt(db.Model):
 
     invoice = db.relationship("Invoice", backref=db.backref("receipt", uselist=False, cascade="all, delete-orphan"))
 
+
+class Payment(db.Model):
+    """General Add Payment ledger: Account Payable (money we pay a vendor)
+    or Account Receivable (money we receive), by Cash or Cheque."""
+    id = db.Column(db.Integer, primary_key=True)
+    payment_no = db.Column(db.String(30), unique=True, nullable=False)
+    payment_date = db.Column(db.Date, default=date.today)
+    category = db.Column(db.String(20), nullable=False)  # Payable / Receivable
+    vendor_id = db.Column(db.Integer, db.ForeignKey("vendor.id"))
+    vehicle_id = db.Column(db.Integer, db.ForeignKey("vehicle.id"))
+    amount = db.Column(db.Float, default=0)
+    method = db.Column(db.String(20), nullable=False, default="Cash")  # Cheque / Cash
+    bank_name = db.Column(db.String(120))
+    cheque_no = db.Column(db.String(60))
+    notes = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    vendor = db.relationship("Vendor", backref="payments")
+    vehicle = db.relationship("Vehicle", backref="payments")
+

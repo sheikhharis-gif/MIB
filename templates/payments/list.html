@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Payments{% endblock %}
+{% block page_title %}Payments{% endblock %}
+{% block page_crumb %}Finance &rsaquo; Payments{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h2>Payment Entries</h2>
+    <a class="btn" href="{{ url_for('payments.new') }}">+ Add Payment</a>
+  </div>
+
+  <div class="pill-tabs" style="margin-bottom:10px;">
+    <a href="{{ url_for('payments.index') }}" class="{{ 'active' if not category }}">All</a>
+    <a href="{{ url_for('payments.index', category='Payable') }}" class="{{ 'active' if category=='Payable' }}">Account Payable</a>
+    <a href="{{ url_for('payments.index', category='Receivable') }}" class="{{ 'active' if category=='Receivable' }}">Account Receivable</a>
+  </div>
+  <div class="pill-tabs" style="margin-bottom:16px;">
+    <a href="{{ url_for('payments.index', category=category, method='') }}" class="{{ 'active' if not method }}">All Methods</a>
+    <a href="{{ url_for('payments.index', category=category, method='Cheque') }}" class="{{ 'active' if method=='Cheque' }}">By Cheque</a>
+    <a href="{{ url_for('payments.index', category=category, method='Cash') }}" class="{{ 'active' if method=='Cash' }}">Cash</a>
+  </div>
+
+  {% if payments %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Payment No</th><th>Date</th><th>Type</th><th>Vendor</th><th>Vehicle</th><th>Method</th><th>Bank / Cheque No</th><th class="text-right">Amount</th><th>Notes</th><th></th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.payment_no }}</td>
+          <td>{{ p.payment_date }}</td>
+          <td><span class="badge {{ 'red' if p.category=='Payable' else 'green' }}">{{ 'Account Payable' if p.category=='Payable' else 'Account Receivable' }}</span></td>
+          <td>{{ p.vendor.name if p.vendor else '—' }}</td>
+          <td>{{ p.vehicle.reg_no if p.vehicle else '—' }}</td>
+          <td><span class="badge {{ 'blue' if p.method=='Cheque' else 'gray' }}">{{ p.method }}</span></td>
+          <td>{{ (p.bank_name ~ ' / ' ~ p.cheque_no) if p.method=='Cheque' and p.bank_name else '—' }}</td>
+          <td class="text-right">{{ p.amount|money }}</td>
+          <td>{{ p.notes or '—' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('payments.delete', payment_id=p.id) }}" onsubmit="return confirm('Delete this payment?');">
+              <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="7">Total</td><td class="text-right">Rs {{ total|money }}</td><td colspan="2"></td></tr></tfoot>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No payments recorded yet.</div>
+  {% endif %}
+</div>
+{% endblock %}
