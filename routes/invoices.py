@@ -147,7 +147,16 @@ def new_vendor_total():
 def view(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     company = get_profile()
-    return render_template("invoices/view.html", invoice=invoice, company=company)
+
+    income_tax_7pct = round(invoice.total_invoice_amount * 0.07, 2)
+    srb_withholding_20pct = round(invoice.srb_amount * 0.20, 2)
+    net_receivable = round(invoice.total_invoice_amount - income_tax_7pct - srb_withholding_20pct, 2)
+
+    return render_template(
+        "invoices/view.html", invoice=invoice, company=company,
+        income_tax_7pct=income_tax_7pct, srb_withholding_20pct=srb_withholding_20pct,
+        net_receivable=net_receivable,
+    )
 
 
 @invoices_bp.route("/<int:invoice_id>/receipt/new", methods=["GET", "POST"])

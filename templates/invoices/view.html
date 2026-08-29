@@ -78,6 +78,12 @@
     <div class="row grand"><span>TOTAL INVOICE AMOUNT</span><span>Rs {{ invoice.total_invoice_amount|money }}</span></div>
   </div>
 
+  <div class="invoice-totals" style="margin-top:14px;">
+    <div class="row"><span>&minus; Income Tax (7% of Total Invoice Amount)</span><span>Rs {{ income_tax_7pct|money }}</span></div>
+    <div class="row"><span>&minus; SRB Withholding (20% of SRB 15%)</span><span>Rs {{ srb_withholding_20pct|money }}</span></div>
+    <div class="row grand"><span>NET AMOUNT RECEIVABLE (2 Cheques)</span><span>Rs {{ net_receivable|money }}</span></div>
+  </div>
+
   {% if invoice.receipt %}
   <div class="panel no-print" style="margin-top:20px; background:var(--blue-50);">
     <strong>Cheque receipt already recorded</strong> — Net received: Rs {{ invoice.receipt.net_receivable|money }}
