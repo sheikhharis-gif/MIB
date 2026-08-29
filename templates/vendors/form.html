@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Vendor' if vendor else 'Add Vendor' }}{% endblock %}
+{% block page_title %}{{ 'Edit Vendor' if vendor else 'Add Vendor' }}{% endblock %}
+{% block page_crumb %}Vendors &rsaquo; {{ 'Edit' if vendor else 'New' }}{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:820px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Vendor Name *</label>
+        <input type="text" name="name" required value="{{ (form.name if form else vendor.name) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Vendor Type *</label>
+        {% set type_val = (form.vendor_type if form else (vendor.vendor_type if vendor else 'Self')) %}
+        <select name="vendor_type" required>
+          <option value="Self" {{ 'selected' if type_val=='Self' }}>Self Vendor (own vehicle)</option>
+          <option value="Broker" {{ 'selected' if type_val=='Broker' }}>Broker Vendor (third-party)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ (form.phone if form else vendor.phone) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>NTN # (CNIC/NTN)</label>
+        <input type="text" name="cnic_ntn" value="{{ (form.cnic_ntn if form else vendor.cnic_ntn) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>STN # (Sales Tax Registration)</label>
+        <input type="text" name="stn_no" value="{{ (form.stn_no if form else vendor.stn_no) or '' }}">
+      </div>
+      <div class="form-group span-2">
+        <label>Address</label>
+        <input type="text" name="address" value="{{ (form.address if form else vendor.address) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Bank Name</label>
+        <input type="text" name="bank_name" value="{{ (form.bank_name if form else vendor.bank_name) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Account No</label>
+        <input type="text" name="account_no" value="{{ (form.account_no if form else vendor.account_no) or '' }}">
+      </div>
+      <div class="form-group span-2">
+        <label>Notes</label>
+        <textarea name="notes" rows="2">{{ (form.notes if form else vendor.notes) or '' }}</textarea>
+      </div>
+      {% if vendor %}
+      <div class="form-group">
+        <label>Status</label>
+        <select name="is_active">
+          <option value="on" {{ 'selected' if vendor.is_active }}>Active</option>
+          <option value="" {{ 'selected' if not vendor.is_active }}>Inactive</option>
+        </select>
+      </div>
+      {% endif %}
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">{{ 'Save Changes' if vendor else 'Add Vendor' }}</button>
+      <a class="btn btn-outline" href="{{ url_for('vendors.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

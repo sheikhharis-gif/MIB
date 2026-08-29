@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Trip' if trip else 'New Trip' }}{% endblock %}
+{% block page_title %}{{ 'Edit Trip' if trip else 'New Trip' }}{% endblock %}
+{% block page_crumb %}Assign Trips &amp; Routes &rsaquo; {{ 'Edit' if trip else 'New' }}{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:920px;">
+  {% if trip %}
+  <p class="hint">Trip No: <strong>{{ trip.trip_no }}</strong> &nbsp;|&nbsp; HM Ref: <strong>{{ trip.hm_ref }}</strong></p>
+  {% endif %}
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Trip Date</label>
+        <input type="date" name="trip_date" value="{{ (form.trip_date if form else trip.trip_date) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Route</label>
+        {% set sel_route = (form.route_id if form else (trip.route_id if trip else '')) %}
+        <select name="route_id">
+          <option value="">— Select route —</option>
+          {% for r in routes %}
+          <option value="{{ r.id }}" {{ 'selected' if sel_route|string == r.id|string }}>{{ r.full_path }}</option>
+          {% endfor %}
+        </select>
+        <span class="hint">Need a new route? <a href="{{ url_for('trips.routes_index') }}">Add one here</a></span>
+      </div>
+      <div class="form-group">
+        <label>Customer Name *</label>
+        <input type="text" name="customer_name" required value="{{ (form.customer_name if form else trip.customer_name) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Delivery Location</label>
+        <input type="text" name="delivery_location" value="{{ (form.delivery_location if form else trip.delivery_location) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Vehicle Type</label>
+        <input type="text" name="vehicle_type" value="{{ (form.vehicle_type if form else trip.vehicle_type) or '' }}" placeholder="e.g. 22 Wheeler">
+      </div>
+      <div class="form-group">
+        <label>Weight</label>
+        <input type="number" step="0.01" name="weight" value="{{ (form.weight if form else trip.weight) or 0 }}">
+      </div>
+      <div class="form-group">
+        <label>DC No</label>
+        <input type="text" name="dc_no" value="{{ (form.dc_no if form else trip.dc_no) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>DC Date</label>
+        <input type="date" name="dc_date" value="{{ (form.dc_date if form else trip.dc_date) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Bilty No</label>
+        <input type="text" name="bilty_no" value="{{ (form.bilty_no if form else trip.bilty_no) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Bilty Date</label>
+        <input type="date" name="bilty_date" value="{{ (form.bilty_date if form else trip.bilty_date) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Freight</label>
+        <input type="number" step="0.01" id="freight" name="freight" value="{{ (form.freight if form else trip.freight) or 0 }}">
+      </div>
+      <div class="form-group">
+        <label>DTN</label>
+        <input type="number" step="0.01" id="dtn" name="dtn" value="{{ (form.dtn if form else trip.dtn) or 0 }}">
+      </div>
+      <div class="form-group">
+        <label>Halting</label>
+        <input type="number" step="0.01" id="halting" name="halting" value="{{ (form.halting if form else trip.halting) or 0 }}">
+      </div>
+      <div class="form-group">
+        <label>Total Freight (auto)</label>
+        <div style="padding:9px 12px; border:1.5px dashed var(--border); border-radius:8px; font-weight:700; color:var(--blue-800);">
+          Rs <span id="total_freight_preview">{{ '%.2f'|format((trip.total_freight if trip else 0) or 0) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">{{ 'Save Changes' if trip else 'Create Trip' }}</button>
+      <a class="btn btn-outline" href="{{ url_for('trips.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

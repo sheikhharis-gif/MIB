@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Load Assessment{% endblock %}
+{% block page_title %}Load Assessment{% endblock %}
+{% block page_crumb %}Operations &rsaquo; Load Assessment &rsaquo; {{ trip.trip_no }}{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:680px;">
+  <div class="panel-header">
+    <h2>{{ trip.trip_no }} &mdash; {{ trip.customer_name }}</h2>
+  </div>
+  <p class="hint">HM Ref: <strong>{{ trip.hm_ref }}</strong> &nbsp;|&nbsp; Total Freight: <strong>Rs {{ trip.total_freight|money }}</strong></p>
+
+  <form method="post" style="margin-top:18px;">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Assign Vehicle *</label>
+        <select name="vehicle_id" required>
+          <option value="">— Select vehicle —</option>
+          {% for v in vehicles %}
+          <option value="{{ v.id }}" {{ 'selected' if trip.vehicle_id == v.id }}>{{ v.reg_no }} ({{ v.vehicle_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assign Vendor *</label>
+        <select name="vendor_id" required>
+          <option value="">— Select vendor —</option>
+          {% for v in vendors %}
+          <option value="{{ v.id }}" {{ 'selected' if trip.vendor_id == v.id }}>{{ v.name }} ({{ v.vendor_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group span-2">
+        <label>Account Payable (amount to pay vendor for this load) *</label>
+        <input type="number" step="0.01" name="account_payable" required value="{{ trip.account_payable or 0 }}">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Save Load Assessment</button>
+      <a class="btn btn-outline" href="{{ url_for('trips.load_assessment_index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

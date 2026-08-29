@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Income / Balance Sheet{% endblock %}
+{% block page_title %}Income / Balance Sheet Report{% endblock %}
+{% block page_crumb %}Reports &rsaquo; Income Statement{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <form method="get" class="form-grid">
+    <div class="form-group">
+      <label>Date From</label>
+      <input type="date" name="date_from" value="{{ date_from }}">
+    </div>
+    <div class="form-group">
+      <label>Date To</label>
+      <input type="date" name="date_to" value="{{ date_to }}">
+    </div>
+    <div class="form-group" style="align-self:flex-end;">
+      <button class="btn" type="submit">Apply</button>
+    </div>
+  </form>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Account Receivable</div>
+    <div class="kpi-value">Rs {{ receivable|money }}</div>
+  </div>
+  <div class="kpi-card accent-red">
+    <div class="kpi-label">Account Payable</div>
+    <div class="kpi-value">Rs {{ payable|money }}</div>
+  </div>
+  <div class="kpi-card accent-gold">
+    <div class="kpi-label">Total Expense</div>
+    <div class="kpi-value">Rs {{ expense|money }}</div>
+  </div>
+  <div class="kpi-card accent-green">
+    <div class="kpi-label">Net Income</div>
+    <div class="kpi-value">Rs {{ net_income|money }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><h2>Balance Sheet Summary</h2></div>
+  <div class="invoice-totals" style="max-width:480px; margin:0;">
+    <div class="row"><span>Account Receivable</span><span>Rs {{ receivable|money }}</span></div>
+    <div class="row"><span>&minus; Account Payable</span><span>Rs {{ payable|money }}</span></div>
+    <div class="row"><span>&minus; Expense (Oil: Rs {{ oil_expense|money }} + Diesel: Rs {{ diesel_expense|money }} + Other: Rs {{ other_expense|money }})</span><span>Rs {{ expense|money }}</span></div>
+    <div class="row grand"><span>Net Income</span><span>Rs {{ net_income|money }}</span></div>
+  </div>
+  <p class="hint" style="margin-top:16px;">Period: {{ date_from }} to {{ date_to }}</p>
+</div>
+{% endblock %}

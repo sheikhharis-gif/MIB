@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Fleet Manager{% endblock %} · Fleet Manager</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+<div class="app-shell">
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <div class="brand">
+        <div class="logo-dot">FM</div>
+        <div class="brand-text">
+          <strong>Fleet Manager</strong>
+          <span>VEHICLE &amp; FREIGHT SYSTEM</span>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" type="button">&#9776;</button>
+
+      <div class="nav-menu" id="navMenu">
+        <div class="nav-item {{ 'active' if request.endpoint == 'dashboard.index' }}">
+          <a class="nav-top-link" href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        </div>
+
+        <div class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('vehicles.') }}">
+          <a class="nav-top-link" href="{{ url_for('vehicles.index') }}">Vehicle Registration</a>
+        </div>
+
+        {% set ops_endpoints = ['trips.index','trips.new','trips.edit','trips.routes_index','trips.load_assessment_index','trips.assess'] %}
+        <div class="nav-item dropdown-item {{ 'has-active' if request.endpoint in ops_endpoints }}">
+          <button type="button" class="nav-top-link">Operations <span class="caret">&#9662;</span></button>
+          <div class="nav-dropdown">
+            <a href="{{ url_for('trips.index') }}" class="{{ 'active' if request.endpoint in ['trips.index','trips.new','trips.edit','trips.routes_index'] }}">Assign Trips &amp; Routes</a>
+            <a href="{{ url_for('trips.load_assessment_index') }}" class="{{ 'active' if request.endpoint in ['trips.load_assessment_index','trips.assess'] }}">Load Assessment</a>
+          </div>
+        </div>
+
+        <div class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('vendors.') }}">
+          <a class="nav-top-link" href="{{ url_for('vendors.index') }}">Vendors</a>
+        </div>
+
+        {% set fin_endpoints = (request.endpoint and (request.endpoint.startswith('expenses.') or request.endpoint.startswith('invoices.'))) %}
+        <div class="nav-item dropdown-item {{ 'has-active' if fin_endpoints }}">
+          <button type="button" class="nav-top-link">Finance <span class="caret">&#9662;</span></button>
+          <div class="nav-dropdown">
+            <a href="{{ url_for('expenses.index') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('expenses.') }}">Expenses</a>
+            <a href="{{ url_for('invoices.index') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('invoices.') }}">Sales Tax Invoices</a>
+          </div>
+        </div>
+
+        <div class="nav-item {{ 'active' if request.endpoint == 'reports.income_statement' }}">
+          <a class="nav-top-link" href="{{ url_for('reports.income_statement') }}">Income / Balance Sheet</a>
+        </div>
+      </div>
+
+      <div class="topnav-right">
+        <a class="logout-link" href="{{ url_for('company.profile') }}" title="Company Profile">&#9881;</a>
+        <div class="user-chip">&#128100; <span class="hide-sm">{{ current_user.full_name }}</span></div>
+        <a class="logout-link" href="{{ url_for('auth.logout') }}">Log out</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="topbar no-print">
+      <div>
+        <h1>{% block page_title %}{% endblock %}</h1>
+        <div class="crumb">{% block page_crumb %}{% endblock %}</div>
+      </div>
+    </div>
+
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Trips{% endblock %}
+{% block page_title %}Assign Trips &amp; Routes{% endblock %}
+{% block page_crumb %}Operations &rsaquo; Trips{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h2>Trips</h2>
+    <div style="display:flex; gap:10px;">
+      <a class="btn btn-outline" href="{{ url_for('trips.routes_index') }}">Manage Routes</a>
+      <a class="btn" href="{{ url_for('trips.new') }}">+ New Trip</a>
+    </div>
+  </div>
+
+  <div class="pill-tabs" style="margin-bottom:16px;">
+    <a href="{{ url_for('trips.index') }}" class="{{ 'active' if not status }}">All</a>
+    <a href="{{ url_for('trips.index', status='Pending') }}" class="{{ 'active' if status=='Pending' }}">Pending</a>
+    <a href="{{ url_for('trips.index', status='Assigned') }}" class="{{ 'active' if status=='Assigned' }}">Assigned</a>
+    <a href="{{ url_for('trips.index', status='Invoiced') }}" class="{{ 'active' if status=='Invoiced' }}">Invoiced</a>
+  </div>
+
+  {% if trips %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Trip No</th><th>HM Ref</th><th>Date</th><th>Route</th><th>Customer</th><th>Vehicle</th><th>Vendor</th><th class="text-right">Total Freight</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for t in trips %}
+        <tr>
+          <td>{{ t.trip_no }}</td>
+          <td>{{ t.hm_ref }}</td>
+          <td>{{ t.trip_date }}</td>
+          <td>{{ t.route.full_path if t.route else '—' }}</td>
+          <td>{{ t.customer_name }}</td>
+          <td>{{ t.vehicle.reg_no if t.vehicle else '—' }}</td>
+          <td>{{ t.vendor.name if t.vendor else '—' }}</td>
+          <td class="text-right">{{ t.total_freight|money }}</td>
+          <td><span class="badge {{ 'green' if t.status=='Assigned' else ('blue' if t.status=='Invoiced' else 'gray') }}">{{ t.status }}</span></td>
+          <td>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('trips.edit', trip_id=t.id) }}">Edit</a>
+            {% if t.status == 'Pending' %}
+            <a class="btn btn-sm" href="{{ url_for('trips.assess', trip_id=t.id) }}">Assess Load</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No trips found for this filter.</div>
+  {% endif %}
+</div>
+{% endblock %}

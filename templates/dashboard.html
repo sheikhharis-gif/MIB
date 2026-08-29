@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_crumb %}Overview of your fleet operations{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <a class="kpi-card" href="{{ url_for('vehicles.index') }}">
+    <div class="kpi-label">Total Vehicles</div>
+    <div class="kpi-value">{{ total_vehicles }}</div>
+  </a>
+  <a class="kpi-card accent-green" href="{{ url_for('vehicles.index') }}">
+    <div class="kpi-label">Active Vehicles</div>
+    <div class="kpi-value">{{ active_vehicles }}</div>
+  </a>
+  <a class="kpi-card" href="{{ url_for('vendors.index') }}">
+    <div class="kpi-label">Total Vendors</div>
+    <div class="kpi-value">{{ total_vendors }}</div>
+  </a>
+  <a class="kpi-card accent-gold" href="{{ url_for('trips.index') }}">
+    <div class="kpi-label">Trips In Progress</div>
+    <div class="kpi-value">{{ active_trips }}</div>
+  </a>
+</div>
+
+<div class="kpi-grid">
+  <a class="kpi-card" href="{{ url_for('reports.income_statement') }}">
+    <div class="kpi-label">Receivable (this month)</div>
+    <div class="kpi-value">Rs {{ month_receivable|money }}</div>
+  </a>
+  <a class="kpi-card accent-red" href="{{ url_for('reports.income_statement') }}">
+    <div class="kpi-label">Payable (this month)</div>
+    <div class="kpi-value">Rs {{ month_payable|money }}</div>
+  </a>
+  <a class="kpi-card accent-gold" href="{{ url_for('expenses.index') }}">
+    <div class="kpi-label">Expense (this month)</div>
+    <div class="kpi-value">Rs {{ month_expense|money }}</div>
+  </a>
+  <a class="kpi-card accent-green" href="{{ url_for('reports.income_statement') }}">
+    <div class="kpi-label">Net Income (this month)</div>
+    <div class="kpi-value">Rs {{ net_income|money }}</div>
+  </a>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>New Entry</h2>
+    <span class="hint">Vehicle &rarr; Assign Trip &amp; Route &rarr; Vendor &rarr; Load Assessment (Vehicle + Payable) &rarr; Expense, all in one go</span>
+  </div>
+  <form method="post" action="{{ url_for('dashboard.quick_entry') }}">
+
+    <h3 class="mt-0">1. Vehicle</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Vehicle *</label>
+        <select name="vehicle_id" id="vehicle_id_top" class="vehicle-select" required>
+          <option value="">— Select vehicle —</option>
+          {% for v in vehicles %}
+          <option value="{{ v.id }}">{{ v.reg_no }} ({{ v.vehicle_type }})</option>
+          {% endfor %}
+        </select>
+        <span class="hint">Not registered yet? <a href="{{ url_for('vehicles.new') }}">Register a vehicle</a></span>
+      </div>
+      <div class="form-group">
+        <label>Trip Date</label>
+        <input type="date" name="trip_date">
+      </div>
+    </div>
+
+    <h3>2. Assign Trip &amp; Route</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Route</label>
+        <select name="route_id">
+          <option value="">— Select route —</option>
+          {% for r in routes %}
+          <option value="{{ r.id }}">{{ r.full_path }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Customer Name *</label>
+        <input type="text" name="customer_name" required>
+      </div>
+      <div class="form-group">
+        <label>Delivery Location</label>
+        <input type="text" name="delivery_location">
+      </div>
+      <div class="form-group">
+        <label>Vehicle Type</label>
+        <input type="text" name="vehicle_type" placeholder="e.g. 22 Wheeler">
+      </div>
+      <div class="form-group">
+        <label>Weight</label>
+        <input type="number" step="0.01" name="weight" value="0">
+      </div>
+      <div class="form-group">
+        <label>DC No</label>
+        <input type="text" name="dc_no">
+      </div>
+      <div class="form-group">
+        <label>DC Date</label>
+        <input type="date" name="dc_date">
+      </div>
+      <div class="form-group">
+        <label>Bilty No</label>
+        <input type="text" name="bilty_no">
+      </div>
+      <div class="form-group">
+        <label>Bilty Date</label>
+        <input type="date" name="bilty_date">
+      </div>
+      <div class="form-group">
+        <label>Freight</label>
+        <input type="number" step="0.01" id="freight" name="freight" value="0">
+      </div>
+      <div class="form-group">
+        <label>DTN</label>
+        <input type="number" step="0.01" id="dtn" name="dtn" value="0">
+      </div>
+      <div class="form-group">
+        <label>Halting</label>
+        <input type="number" step="0.01" id="halting" name="halting" value="0">
+      </div>
+      <div class="form-group">
+        <label>Total Freight (auto)</label>
+        <div style="padding:9px 12px; border:1.5px dashed var(--border); border-radius:8px; font-weight:700; color:var(--blue-800);">
+          Rs <span id="total_freight_preview">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>3. Vendor</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Vendor *</label>
+        <select name="vendor_id" required>
+          <option value="">— Select vendor —</option>
+          {% for v in vendors %}
+          <option value="{{ v.id }}">{{ v.name }} ({{ v.vendor_type }})</option>
+          {% endfor %}
+        </select>
+        <span class="hint">New vendor? <a href="{{ url_for('vendors.new') }}">Add vendor</a></span>
+      </div>
+      <div class="form-group">
+        <label>Account Receivable (amount to receive from customer) *</label>
+        <input type="number" step="0.01" id="account_receivable" name="account_receivable" required value="0">
+        <span class="hint">Auto-filled from Total Freight above — edit if it should differ.</span>
+      </div>
+    </div>
+
+    <h3>4. Load Assessment</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Assign Vehicle *</label>
+        <select name="vehicle_id" id="vehicle_id_load" class="vehicle-select" required>
+          <option value="">— Select vehicle —</option>
+          {% for v in vehicles %}
+          <option value="{{ v.id }}">{{ v.reg_no }} ({{ v.vehicle_type }})</option>
+          {% endfor %}
+        </select>
+        <span class="hint">Same vehicle as step 1 — kept here so the load assignment is clear.</span>
+      </div>
+      <div class="form-group">
+        <label>Account Payable (amount to pay the vendor for this load) *</label>
+        <input type="number" step="0.01" name="account_payable" required value="0">
+      </div>
+    </div>
+
+    <h3>5. Expense (optional)</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Expense Type</label>
+        <select name="expense_type" id="dash_expense_type">
+          <option value="">— None —</option>
+          <option value="Diesel">Diesel Expense</option>
+          <option value="Oil">Oil Expense</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group" id="dash_other_expense_group" style="display:none;">
+        <label>Specify Other Expense</label>
+        <input type="text" name="other_expense_name" placeholder="e.g. Toll Tax, Repair">
+      </div>
+      <div class="form-group">
+        <label>Expense Amount</label>
+        <input type="number" step="0.01" name="expense_amount" value="0">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" type="submit">Save Entry &amp; Update Income</button>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Recent Trips</h2>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('trips.new') }}">+ New Trip (detailed form)</a>
+  </div>
+  {% if recent_trips %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Trip No</th><th>HM Ref</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Vendor</th><th>Status</th><th class="text-right">Total Freight</th></tr></thead>
+      <tbody>
+        {% for t in recent_trips %}
+        <tr>
+          <td>{{ t.trip_no }}</td>
+          <td>{{ t.hm_ref }}</td>
+          <td>{{ t.trip_date }}</td>
+          <td>{{ t.customer_name }}</td>
+          <td>{{ t.vehicle.reg_no if t.vehicle else '—' }}</td>
+          <td>{{ t.vendor.name if t.vendor else '—' }}</td>
+          <td><span class="badge {{ 'green' if t.status=='Assigned' else ('blue' if t.status=='Invoiced' else 'gray') }}">{{ t.status }}</span></td>
+          <td class="text-right">{{ t.total_freight|money }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No trips yet. Create your first trip to get started.</div>
+  {% endif %}
+</div>
+{% endblock %}

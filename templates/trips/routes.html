@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Routes{% endblock %}
+{% block page_title %}Routes{% endblock %}
+{% block page_crumb %}Assign Trips &amp; Routes &rsaquo; Routes{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:680px;">
+  <div class="panel-header"><h2>Add Route</h2></div>
+  <p class="hint" style="margin-bottom:14px;">A route doesn't have to be a single hop — keep clicking <strong>+ Add Destination</strong> to build a multi-stop route (e.g. Karachi &rarr; Hyderabad &rarr; Lahore), then save it.</p>
+  <form method="post" action="{{ url_for('trips.routes_new') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Origin *</label>
+        <input type="text" name="origin" required placeholder="e.g. Karachi">
+      </div>
+      <div class="form-group">
+        <label>Distance (km, optional)</label>
+        <input type="number" step="0.01" name="distance_km">
+      </div>
+      <div class="form-group span-2">
+        <label>Destinations *</label>
+        <div id="destinationsContainer">
+          <div class="destination-row">
+            <input type="text" name="destinations[]" placeholder="Destination 1 (e.g. Hyderabad)" required>
+          </div>
+        </div>
+        <button type="button" id="addDestinationBtn" class="btn btn-outline btn-sm" style="margin-top:6px; align-self:flex-start;">+ Add Destination</button>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn" type="submit">Save Route</button></div>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>All Routes</h2>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('trips.index') }}">&larr; Back to Trips</a>
+  </div>
+  {% if routes %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Origin</th><th>Destinations (in order)</th><th>Distance (km)</th><th></th></tr></thead>
+      <tbody>
+        {% for r in routes %}
+        <tr>
+          <td>{{ r.origin }}</td>
+          <td>
+            {% for s in r.stops %}
+            <span class="badge blue">{{ loop.index }}. {{ s.destination }}</span>
+            {% endfor %}
+          </td>
+          <td>{{ r.distance_km|money }}</td>
+          <td>
+            <form method="post" action="{{ url_for('trips.routes_delete', route_id=r.id) }}" onsubmit="return confirm('Delete this route?');">
+              <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No routes added yet.</div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var addBtn = document.getElementById("addDestinationBtn");
+  var container = document.getElementById("destinationsContainer");
+  if (!addBtn || !container) return;
+
+  addBtn.addEventListener("click", function () {
+    var count = container.querySelectorAll(".destination-row").length + 1;
+    var row = document.createElement("div");
+    row.className = "destination-row";
+    row.innerHTML =
+      '<input type="text" name="destinations[]" placeholder="Destination ' + count + '">' +
+      '<button type="button" class="btn btn-outline btn-sm remove-destination" title="Remove">&times;</button>';
+    container.appendChild(row);
+    row.querySelector("input").focus();
+  });
+
+  container.addEventListener("click", function (e) {
+    if (e.target.classList.contains("remove-destination")) {
+      e.target.closest(".destination-row").remove();
+    }
+  });
+});
+</script>
+{% endblock %}

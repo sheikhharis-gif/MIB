@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Invoice {{ invoice.invoice_no }}{% endblock %}
+{% block page_title %}Sales Tax Invoice{% endblock %}
+{% block page_crumb %}Sales Tax Invoices &rsaquo; {{ invoice.invoice_no }}{% endblock %}
+
+{% block content %}
+<div class="invoice-sheet">
+  <div class="sti-letterhead">
+    <div class="sti-brand">
+      <div class="sti-logo-mark">{{ (company.company_name or "F")[:1] }}</div>
+      <div>
+        <div class="sti-company-name">{{ company.company_name or "Your Company" }}</div>
+        <div class="sti-tagline">{{ company.tagline }}</div>
+      </div>
+    </div>
+    <div class="sti-contact">
+      {% if company.email %}<div>{{ company.email }}</div>{% endif %}
+      {% if company.website %}<div>{{ company.website }}</div>{% endif %}
+      {% if company.lahore_office %}<div>Lahore: {{ company.lahore_phone }}</div>{% endif %}
+      {% if company.karachi_office %}<div>Karachi: {{ company.karachi_phone }}</div>{% endif %}
+    </div>
+  </div>
+
+  <h2 class="sti-title">SALES TAX INVOICE</h2>
+
+  <div class="sti-meta">
+    <div class="sti-bill-to">
+      <div class="sti-label">TO:</div>
+      <div class="sti-bold">{{ invoice.vendor.name }}</div>
+      {% if invoice.vendor.address %}<div>{{ invoice.vendor.address }}</div>{% endif %}
+      <div>NTN #: {{ invoice.vendor.cnic_ntn or "—" }}</div>
+      <div>STN #: {{ invoice.vendor.stn_no or "—" }}</div>
+    </div>
+    <div class="sti-invoice-info">
+      <div><span>NTN #</span><span>{{ company.ntn_no or "—" }}</span></div>
+      <div><span>Invoice Date</span><span>{{ invoice.invoice_date }}</span></div>
+      <div><span>Invoice #</span><span>{{ invoice.invoice_no }}</span></div>
+      <div><span>Segment</span><span>{{ invoice.segment or "—" }}</span></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ref #</th><th>Vehicle #</th><th>Customer Name / DC No</th><th>DC Date</th><th>Bilty #</th>
+          <th>Bilty Date</th><th>Delivery Location</th><th>Vehicle Type</th><th>Weight</th><th>DTN/Halting</th><th class="text-right">Total Freight</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in invoice.items %}
+        <tr>
+          <td>{{ item.hm_ref }}</td>
+          <td>{{ item.vehicle_reg }}</td>
+          <td>{{ item.customer_name }}{% if item.dc_no %}<br><span class="muted">{{ item.dc_no }}</span>{% endif %}</td>
+          <td>{{ item.dc_date or "—" }}</td>
+          <td>{{ item.bilty_no or "—" }}</td>
+          <td>{{ item.bilty_date or "—" }}</td>
+          <td>{{ item.delivery_location or "—" }}</td>
+          <td>{{ item.vehicle_type or "—" }}</td>
+          <td>{{ item.weight|money }}</td>
+          <td>{{ (item.dtn + item.halting)|money }}</td>
+          <td class="text-right">{{ item.line_total|money }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if invoice.items|length > 1 %}
+      <tfoot>
+        <tr><td colspan="10">Total (all trips)</td><td class="text-right">{{ invoice.total_freight|money }}</td></tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+
+  <div class="invoice-totals">
+    <div class="row"><span>Total Freight</span><span>Rs {{ invoice.total_freight|money }}</span></div>
+    <div class="row"><span>SRB 15%</span><span>Rs {{ invoice.srb_amount|money }}</span></div>
+    <div class="row grand"><span>TOTAL INVOICE AMOUNT</span><span>Rs {{ invoice.total_invoice_amount|money }}</span></div>
+  </div>
+
+  <div class="form-actions no-print">
+    <button class="btn" onclick="window.print()">Print</button>
+    <a class="btn btn-outline" href="{{ url_for('invoices.index') }}">Back to Invoices</a>
+  </div>
+</div>
+{% endblock %}

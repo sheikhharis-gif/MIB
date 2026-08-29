@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign In · Fleet Manager</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+<div class="login-screen">
+  <video autoplay muted loop playsinline poster="{{ url_for('static', filename='video/trucks-bg-poster.jpg') }}">
+    <source src="{{ url_for('static', filename='video/trucks-bg.mp4') }}" type="video/mp4">
+  </video>
+
+  <div class="login-card">
+    <div class="logo-dot">FM</div>
+    <h1>Fleet Manager</h1>
+    <p class="sub">Vehicle &amp; Freight Management System</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="admin" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;" required>
+      </div>
+      <button type="submit" class="btn">Sign In</button>
+    </form>
+    <div class="login-hint">Default login: <strong>admin</strong> / <strong>admin123</strong></div>
+  </div>
+</div>
+</body>
+</html>

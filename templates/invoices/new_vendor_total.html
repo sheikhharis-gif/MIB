@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}New Total Vendor Invoice{% endblock %}
+{% block page_title %}Total Vendor Sales Tax Invoice{% endblock %}
+{% block page_crumb %}Sales Tax Invoices &rsaquo; Total Vendor &rsaquo; New{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <form method="get" class="form-grid" style="margin-bottom:20px;">
+    <div class="form-group">
+      <label>Vendor (Bill To) *</label>
+      <select name="vendor_id" onchange="this.form.submit()" required>
+        <option value="">— Select vendor —</option>
+        {% for v in vendors %}
+        <option value="{{ v.id }}" {{ 'selected' if vendor_id|string == v.id|string }}>{{ v.name }} ({{ v.vendor_type }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Date From</label>
+      <input type="date" name="date_from" value="{{ date_from }}" onchange="this.form.submit()">
+    </div>
+    <div class="form-group">
+      <label>Date To</label>
+      <input type="date" name="date_to" value="{{ date_to }}" onchange="this.form.submit()">
+    </div>
+  </form>
+
+  {% if vendor_id %}
+    {% if trips %}
+    <form method="post">
+      <input type="hidden" name="vendor_id" value="{{ vendor_id }}">
+      <input type="hidden" name="date_from" value="{{ date_from }}">
+      <input type="hidden" name="date_to" value="{{ date_to }}">
+      <div class="form-group span-2" style="max-width:320px; margin-bottom:16px;">
+        <label>Segment (optional)</label>
+        <input type="text" name="segment" placeholder="e.g. Finished Goods">
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.trip-check').forEach(c=>c.checked=this.checked)"></th><th>HM Ref</th><th>Vehicle</th><th>Customer Name / DC No</th><th>DC Date</th><th>Bilty No</th><th>Bilty Date</th><th>Delivery Location</th><th>Vehicle Type</th><th>Weight</th><th>DTN/Halting</th><th class="text-right">Total Freight</th></tr></thead>
+          <tbody>
+            {% for t in trips %}
+            <tr>
+              <td><input class="trip-check" type="checkbox" name="trip_ids" value="{{ t.id }}"></td>
+              <td>{{ t.hm_ref }}</td>
+              <td>{{ t.vehicle.reg_no }}</td>
+              <td>{{ t.customer_name }}{% if t.dc_no %} / {{ t.dc_no }}{% endif %}</td>
+              <td>{{ t.dc_date or '—' }}</td>
+              <td>{{ t.bilty_no or '—' }}</td>
+              <td>{{ t.bilty_date or '—' }}</td>
+              <td>{{ t.delivery_location or '—' }}</td>
+              <td>{{ t.vehicle_type or '—' }}</td>
+              <td>{{ t.weight|money }}</td>
+              <td>{{ (t.dtn + t.halting)|money }}</td>
+              <td class="text-right">{{ t.total_freight|money }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="form-actions">
+        <button class="btn" type="submit">Generate Total Vendor Sales Tax Invoice</button>
+        <a class="btn btn-outline" href="{{ url_for('invoices.index') }}">Cancel</a>
+      </div>
+    </form>
+    {% else %}
+    <div class="empty-state">No un-invoiced, assigned trips found for this vendor in the selected date range.</div>
+    {% endif %}
+  {% else %}
+  <div class="empty-state">Select a vendor above to see eligible trips.</div>
+  {% endif %}
+</div>
+{% endblock %}

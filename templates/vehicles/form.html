@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Vehicle' if vehicle else 'Register Vehicle' }}{% endblock %}
+{% block page_title %}{{ 'Edit Vehicle' if vehicle else 'Register Vehicle' }}{% endblock %}
+{% block page_crumb %}Fleet &rsaquo; Vehicle Registration &rsaquo; {{ 'Edit' if vehicle else 'New' }}{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:820px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Registration No *</label>
+        <input type="text" name="reg_no" required value="{{ (form.reg_no if form else vehicle.reg_no) or '' }}" placeholder="e.g. TLA-4521">
+      </div>
+      <div class="form-group">
+        <label>Vehicle Type *</label>
+        <input type="text" name="vehicle_type" required value="{{ (form.vehicle_type if form else vehicle.vehicle_type) or '' }}" placeholder="e.g. 22 Wheeler / Container / Mazda">
+      </div>
+      <div class="form-group">
+        <label>Make / Model</label>
+        <input type="text" name="make_model" value="{{ (form.make_model if form else vehicle.make_model) or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Capacity Weight (kg)</label>
+        <input type="number" step="0.01" name="capacity_weight" value="{{ (form.capacity_weight if form else vehicle.capacity_weight) or 0 }}">
+      </div>
+      <div class="form-group">
+        <label>Owner Vendor</label>
+        <select name="owner_vendor_id">
+          <option value="">— Not linked —</option>
+          {% for v in vendors %}
+          {% set sel_id = (form.owner_vendor_id if form else (vehicle.owner_vendor_id if vehicle else '')) %}
+          <option value="{{ v.id }}" {{ 'selected' if sel_id|string == v.id|string }}>{{ v.name }} ({{ v.vendor_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        {% set status_val = (form.status if form else (vehicle.status if vehicle else 'Active')) %}
+        <select name="status">
+          <option value="Active" {{ 'selected' if status_val=='Active' }}>Active</option>
+          <option value="Inactive" {{ 'selected' if status_val=='Inactive' }}>Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">{{ 'Save Changes' if vehicle else 'Register Vehicle' }}</button>
+      <a class="btn btn-outline" href="{{ url_for('vehicles.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

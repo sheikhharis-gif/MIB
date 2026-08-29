@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Vehicle Registration{% endblock %}
+{% block page_title %}Vehicle Registration{% endblock %}
+{% block page_crumb %}Fleet &rsaquo; Vehicle Registration{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h2>Registered Vehicles</h2>
+    <a class="btn" href="{{ url_for('vehicles.new') }}">+ Register Vehicle</a>
+  </div>
+
+  <form method="get" class="search-box" style="margin-bottom:16px;">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search registration no...">
+  </form>
+
+  {% if vehicles %}
+  <div class="table-wrap">
+    <table class="data-table" id="vehicleTable">
+      <thead><tr><th>Reg No</th><th>Type</th><th>Make / Model</th><th>Capacity (kg)</th><th>Owner Vendor</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr>
+          <td><strong>{{ v.reg_no }}</strong></td>
+          <td>{{ v.vehicle_type }}</td>
+          <td>{{ v.make_model or '—' }}</td>
+          <td>{{ v.capacity_weight|money }}</td>
+          <td>{{ v.owner_vendor.name if v.owner_vendor else '—' }}</td>
+          <td><span class="badge {{ 'green' if v.status=='Active' else 'gray' }}">{{ v.status }}</span></td>
+          <td>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('vehicles.edit', vehicle_id=v.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('vehicles.delete', vehicle_id=v.id) }}" style="display:inline" onsubmit="return confirm('Delete this vehicle?');">
+              <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No vehicles registered yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

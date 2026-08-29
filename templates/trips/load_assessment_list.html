@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Load Assessment{% endblock %}
+{% block page_title %}Load Assessment{% endblock %}
+{% block page_crumb %}Operations &rsaquo; Load Assessment{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h2>Trips Awaiting / Assessed</h2></div>
+  <p class="hint" style="margin-bottom:14px;">Assign a vehicle &amp; vendor to a trip and record the Account Payable amount owed to that vendor for the load.</p>
+
+  {% if trips %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Trip No</th><th>HM Ref</th><th>Customer</th><th class="text-right">Total Freight</th><th>Vehicle</th><th>Vendor</th><th class="text-right">Account Payable</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for t in trips %}
+        <tr>
+          <td>{{ t.trip_no }}</td>
+          <td>{{ t.hm_ref }}</td>
+          <td>{{ t.customer_name }}</td>
+          <td class="text-right">{{ t.total_freight|money }}</td>
+          <td>{{ t.vehicle.reg_no if t.vehicle else '—' }}</td>
+          <td>{{ t.vendor.name if t.vendor else '—' }}</td>
+          <td class="text-right">{{ t.account_payable|money }}</td>
+          <td><span class="badge {{ 'green' if t.status=='Assigned' else ('blue' if t.status=='Invoiced' else 'gray') }}">{{ t.status }}</span></td>
+          <td><a class="btn btn-outline btn-sm" href="{{ url_for('trips.assess', trip_id=t.id) }}">{{ 'Re-assess' if t.vehicle_id else 'Assess Load' }}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No trips yet. <a href="{{ url_for('trips.new') }}">Create a trip</a> first.</div>
+  {% endif %}
+</div>
+{% endblock %}

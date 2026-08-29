@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}New Individual Invoice{% endblock %}
+{% block page_title %}Individual Sales Tax Invoice{% endblock %}
+{% block page_crumb %}Sales Tax Invoices &rsaquo; Individual &rsaquo; New{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <p class="hint" style="margin-bottom:14px;">Select a trip that has already been through Load Assessment (Assigned) and is not yet invoiced.</p>
+  {% if trips %}
+  <form method="post">
+    <div class="form-group span-2" style="max-width:320px; margin-bottom:16px;">
+      <label>Segment (optional)</label>
+      <input type="text" name="segment" placeholder="e.g. Finished Goods">
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th></th><th>Trip No</th><th>HM Ref</th><th>Customer</th><th>Vendor</th><th>Vehicle</th><th class="text-right">Total Freight</th></tr></thead>
+        <tbody>
+          {% for t in trips %}
+          <tr>
+            <td><input type="radio" name="trip_id" value="{{ t.id }}" required></td>
+            <td>{{ t.trip_no }}</td>
+            <td>{{ t.hm_ref }}</td>
+            <td>{{ t.customer_name }}</td>
+            <td>{{ t.vendor.name }}</td>
+            <td>{{ t.vehicle.reg_no }}</td>
+            <td class="text-right">{{ t.total_freight|money }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Generate Invoice</button>
+      <a class="btn btn-outline" href="{{ url_for('invoices.index') }}">Cancel</a>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state">No trips are ready for invoicing. Run Load Assessment on a trip first.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Vendors{% endblock %}
+{% block page_title %}Vendors{% endblock %}
+{% block page_crumb %}Vendors &rsaquo; Directory{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <a class="kpi-card" href="{{ url_for('vendors.index', type='Broker') }}">
+    <div class="kpi-label">Broker Vendors</div>
+    <div class="kpi-value">{{ totals.get('Broker', 0) }}</div>
+  </a>
+  <a class="kpi-card accent-green" href="{{ url_for('vendors.index', type='Self') }}">
+    <div class="kpi-label">Self Vendors</div>
+    <div class="kpi-value">{{ totals.get('Self', 0) }}</div>
+  </a>
+  <a class="kpi-card accent-gold" href="{{ url_for('vendors.index') }}">
+    <div class="kpi-label">Total Vendors</div>
+    <div class="kpi-value">{{ vendors|length if not vtype else totals.get('Broker',0) + totals.get('Self',0) }}</div>
+  </a>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Vendor Directory</h2>
+    <a class="btn" href="{{ url_for('vendors.new') }}">+ Add Vendor</a>
+  </div>
+
+  <div class="pill-tabs" style="margin-bottom:16px;">
+    <a href="{{ url_for('vendors.index') }}" class="{{ 'active' if not vtype }}">All</a>
+    <a href="{{ url_for('vendors.index', type='Broker') }}" class="{{ 'active' if vtype=='Broker' }}">Broker Vendors</a>
+    <a href="{{ url_for('vendors.index', type='Self') }}" class="{{ 'active' if vtype=='Self' }}">Self Vendors</a>
+  </div>
+
+  {% if vendors %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Phone</th><th>CNIC/NTN</th><th>Bank</th><th class="text-right">Total Payable (all trips)</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for v in vendors %}
+        <tr>
+          <td><strong>{{ v.name }}</strong></td>
+          <td><span class="badge {{ 'blue' if v.vendor_type=='Broker' else 'green' }}">{{ v.vendor_type }}</span></td>
+          <td>{{ v.phone or '—' }}</td>
+          <td>{{ v.cnic_ntn or '—' }}</td>
+          <td>{{ v.bank_name or '—' }}</td>
+          <td class="text-right">{{ payable_by_vendor.get(v.id, 0)|money }}</td>
+          <td><span class="badge {{ 'green' if v.is_active else 'gray' }}">{{ 'Active' if v.is_active else 'Inactive' }}</span></td>
+          <td>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('vendors.edit', vendor_id=v.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('vendors.delete', vendor_id=v.id) }}" style="display:inline" onsubmit="return confirm('Delete this vendor?');">
+              <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No vendors found.</div>
+  {% endif %}
+</div>
+{% endblock %}

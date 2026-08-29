@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Add Expense{% endblock %}
+{% block page_title %}Add Expense{% endblock %}
+{% block page_crumb %}Finance &rsaquo; Expenses &rsaquo; New{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width:720px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Expense Date</label>
+        <input type="date" name="expense_date">
+      </div>
+      <div class="form-group">
+        <label>Expense Type *</label>
+        <select name="expense_type" id="expense_type" required>
+          <option value="Diesel">Diesel Expense</option>
+          <option value="Oil">Oil Expense</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group" id="other_expense_name_group" style="display:none;">
+        <label>Specify Other Expense *</label>
+        <input type="text" name="other_expense_name" placeholder="e.g. Toll Tax, Repair, Toll Fee">
+      </div>
+      <div class="form-group">
+        <label>Vehicle *</label>
+        <select name="vehicle_id" required>
+          <option value="">— Select vehicle —</option>
+          {% for v in vehicles %}
+          <option value="{{ v.id }}">{{ v.reg_no }} ({{ v.vehicle_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Related Trip (optional)</label>
+        <select name="trip_id">
+          <option value="">— None —</option>
+          {% for t in trips %}
+          <option value="{{ t.id }}">{{ t.trip_no }} — {{ t.customer_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Amount *</label>
+        <input type="number" step="0.01" name="amount" required>
+      </div>
+      <div class="form-group span-2">
+        <label>Description</label>
+        <input type="text" name="description">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Save Expense</button>
+      <a class="btn btn-outline" href="{{ url_for('expenses.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var typeSel = document.getElementById("expense_type");
+  var otherGroup = document.getElementById("other_expense_name_group");
+  function toggleOther() {
+    otherGroup.style.display = typeSel.value === "Other" ? "" : "none";
+  }
+  typeSel.addEventListener("change", toggleOther);
+  toggleOther();
+});
+</script>
+{% endblock %}

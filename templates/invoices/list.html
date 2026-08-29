@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Sales Tax Invoices{% endblock %}
+{% block page_title %}Sales Tax Invoices{% endblock %}
+{% block page_crumb %}Finance &rsaquo; Sales Tax Invoices{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h2>Invoices</h2>
+    <div style="display:flex; gap:10px;">
+      <a class="btn btn-outline" href="{{ url_for('invoices.new_individual') }}">+ Individual Invoice</a>
+      <a class="btn" href="{{ url_for('invoices.new_vendor_total') }}">+ Total Vendor Invoice</a>
+    </div>
+  </div>
+
+  <div class="pill-tabs" style="margin-bottom:16px;">
+    <a href="{{ url_for('invoices.index') }}" class="{{ 'active' if not itype }}">All</a>
+    <a href="{{ url_for('invoices.index', type='Individual') }}" class="{{ 'active' if itype=='Individual' }}">Individual</a>
+    <a href="{{ url_for('invoices.index', type='VendorTotal') }}" class="{{ 'active' if itype=='VendorTotal' }}">Total Vendor</a>
+  </div>
+
+  {% if invoices %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Invoice No</th><th>Type</th><th>Date</th><th>Vendor</th><th class="text-right">Total Freight</th><th class="text-right">SRB 15%</th><th class="text-right">Total Invoice Amt</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td>{{ inv.invoice_no }}</td>
+          <td><span class="badge {{ 'blue' if inv.invoice_type=='Individual' else 'gold' }}">{{ 'Individual' if inv.invoice_type=='Individual' else 'Total Vendor' }}</span></td>
+          <td>{{ inv.invoice_date }}</td>
+          <td>{{ inv.vendor.name }}</td>
+          <td class="text-right">{{ inv.total_freight|money }}</td>
+          <td class="text-right">{{ inv.srb_amount|money }}</td>
+          <td class="text-right"><strong>{{ inv.total_invoice_amount|money }}</strong></td>
+          <td><span class="badge {{ 'green' if inv.status=='Paid' else 'gray' }}">{{ inv.status }}</span></td>
+          <td>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('invoices.view', invoice_id=inv.id) }}">View / Print</a>
+            <form method="post" action="{{ url_for('invoices.delete', invoice_id=inv.id) }}" style="display:inline" onsubmit="return confirm('Delete this invoice? Its trips will be released.');">
+              <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No invoices generated yet.</div>
+  {% endif %}
+</div>
+{% endblock %}
