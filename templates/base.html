@@ -42,14 +42,16 @@
           <a class="nav-top-link" href="{{ url_for('vendors.index') }}">Vendors</a>
         </div>
 
-        {% set fin_endpoints = (request.endpoint and (request.endpoint.startswith('expenses.') or request.endpoint.startswith('invoices.') or request.endpoint.startswith('payments.'))) %}
-        <div class="nav-item dropdown-item {{ 'has-active' if fin_endpoints }}">
-          <button type="button" class="nav-top-link">Finance <span class="caret">&#9662;</span></button>
-          <div class="nav-dropdown">
-            <a href="{{ url_for('expenses.index') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('expenses.') }}">Expenses</a>
-            <a href="{{ url_for('invoices.index') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('invoices.') }}">Sales Tax Invoices</a>
-            <a href="{{ url_for('payments.index') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('payments.') }}">Payments (Payable / Receivable)</a>
-          </div>
+        <div class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('expenses.') }}">
+          <a class="nav-top-link" href="{{ url_for('expenses.index') }}">Expenses</a>
+        </div>
+
+        <div class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('invoices.') }}">
+          <a class="nav-top-link" href="{{ url_for('invoices.index') }}">Sales Tax Invoices</a>
+        </div>
+
+        <div class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('payments.') }}">
+          <a class="nav-top-link" href="{{ url_for('payments.index') }}">Payments</a>
         </div>
 
         <div class="nav-item {{ 'active' if request.endpoint == 'reports.income_statement' }}">
